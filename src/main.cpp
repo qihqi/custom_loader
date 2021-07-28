@@ -1,5 +1,6 @@
 #include "loader.h"
 #include <iostream>
+#include <fstream>
 #include <thread>
 #include <sstream>
 
@@ -56,40 +57,21 @@ import numpy as np
 print(np.arange(10)*10)
 )end";
 
-int main(int argc, const char **argv) {
+void runX(const char* name, const char* statement) {
   PythonAPI a;
-  PythonAPI b;
-  a.run(example_src);
-  b.run(example_src);
-
-  std::cout << "fib(30) for single interpreter\n";
-  std::thread t0([&]{
-    a.run("do_fib()");
-  });
-  std::thread t1([&]{
-    a.run("do_fib()");
-  });
-  t0.join();
-  t1.join();
-
-  std::cout << "fib(30) for 2 interpreters\n";
-  std::thread t2([&]{
-    a.run("do_fib()");
-  });
-  std::thread t3([&]{
-    b.run("do_fib()");
-  });
-  t2.join();
-  t3.join();
-
-  a.run("import regex");
-  std::thread t4([&]{
-    a.run(run_numpy);
-  });
-  std::thread t5([&]{
-    b.run(run_numpy);
-  });
-  t4.join();
-  t5.join();
-
+  std::cout << "=============== "<< name << " ===================" << std::endl;
+  a.run(statement);
 }
+
+
+int main(int argc, const char **argv) {
+  if (argc > 1)  {
+    std::ifstream f(argv[1]);
+    std::stringstream buffer;
+    buffer << f.rdbuf();
+    runX(argv[1], buffer.str().c_str());
+  } else {
+    std::cerr << "No file name provided..." << std::endl;
+  }
+}
+
